@@ -1,6 +1,5 @@
 flask
 <<<<<<< HEAD
-pytest
 =======
 pytest
 >>>>>>> 06509fe6525f90394b4c40bfd06c7dc5ca911af9
