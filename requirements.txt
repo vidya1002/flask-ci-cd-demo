@@ -1,10 +1,2 @@
 flask
-<<<<<<< HEAD
--
 pytest
-=======
-<<<<<<< HEAD
-=======
-pytest
->>>>>>> 06509fe6525f90394b4c40bfd06c7dc5ca911af9
->>>>>>> 6bb1aa76625b39c08a84a155249caa5d9ac6d7a3
