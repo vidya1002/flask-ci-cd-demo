@@ -1,8 +1,7 @@
----
-
 # 🚀 Python Flask CI/CD Deployment on AWS EC2 with Nginx & Gunicorn
 
 ## 📋 Project Overview
+
 This project demonstrates how to build, test, and deploy a **Flask web application** (built using **Python**) on an **Amazon Linux EC2** instance. It uses **Nginx** as a reverse proxy and **Gunicorn** as the WSGI application server. The project follows a step-by-step CI/CD pipeline powered by **GitHub Actions** for automated testing and deployment.
 
 🔗 **GitHub Repository**: [flask-ci-cd-demo](https://github.com/vidya1002/flask-ci-cd-demo)
@@ -10,7 +9,6 @@ This project demonstrates how to build, test, and deploy a **Flask web applicati
 ---
 
 ## 📂 Project Structure
-Here’s the structure of the project:
 
 ```
 flask-ci-cd-demo/
@@ -35,7 +33,6 @@ flask-ci-cd-demo/
 ## 🛠️ Step-by-Step Development Process
 
 ### 1️⃣ Create and Run the Flask Application (`app.py`)
-The `app.py` file contains the Flask application code:
 
 ```python
 from flask import Flask
@@ -44,7 +41,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Hello, World!"  # Updated to "Hello, World!"
+    return "Hello, World!"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
@@ -58,11 +55,11 @@ Access the application at: `http://127.0.0.1:5000`
 
 ---
 
-### 2️⃣ Add `requirements.txt` (Flask)
-Create a `requirements.txt` file to manage Python dependencies. Initially, it includes only **Flask**:
+### 2️⃣ Install Dependencies (`requirements.txt`)
 
 ```txt
 Flask==2.3.2
+pytest==7.4.0
 ```
 
 #### Install Dependencies
@@ -73,8 +70,6 @@ pip install -r requirements.txt
 ---
 
 ### 3️⃣ Initialize Git and Push to GitHub
-Initialize a Git repository and push the code to GitHub:
-
 ```bash
 git init
 git add .
@@ -87,8 +82,10 @@ git push -u origin main
 ---
 
 ### 4️⃣ Set Up GitHub Actions CI/CD Workflow
-Create a `.github/workflows/ci-cd.yml` file to automate testing and deployment:
-```
+
+Create a `.github/workflows/ci-cd.yml` file:
+
+```yaml
 name: Flask CI/CD Pipeline
 
 on:
@@ -102,20 +99,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
       - name: Run tests
         run: |
-          pip install pytest
           pytest test_app.py
 
   deploy:
@@ -124,16 +117,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - name: Deploy to AWS EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_KEY }} ec2-user@${{ secrets.EC2_IP }} 'bash -s' < deployment/deployment.sh
-
 ```
+
 ---
 
-### 5️⃣ Add Unit Tests (`test_app.py`) and Update `requirements.txt` (pytest)
-Create a `test_app.py` file to test the Flask application:
+### 5️⃣ Add Unit Tests (`test_app.py`)
 
 ```python
 import pytest
@@ -148,14 +139,7 @@ def client():
 def test_home_page(client):
     response = client.get('/')
     assert response.status_code == 200
-    assert b"Hello, World!" in response.data  # Updated to "Hello, World!"
-```
-
-Update `requirements.txt` to include **pytest**:
-
-```txt
-Flask==2.3.2
-pytest==7.4.0
+    assert b"Hello, World!" in response.data
 ```
 
 #### Run Tests Locally
@@ -165,25 +149,19 @@ pytest test_app.py
 
 ---
 
-### 6️⃣ Deploy to AWS EC2
-Deploy the Flask application to an **Amazon Linux EC2** instance using **Nginx** and **Gunicorn**.
+### 6️⃣ Deploy to AWS EC2 with Nginx & Gunicorn
 
-#### 1. Connect to EC2 Instance
+#### Connect to EC2 Instance
 ```bash
 ssh -i your-key.pem ec2-user@your-ec2-public-ip
 ```
 
-#### 2. Set Up Nginx
-**Nginx** acts as a reverse proxy to handle incoming HTTP requests and forward them to Gunicorn.
-
-##### Install Nginx
+#### Install Nginx
 ```bash
 sudo yum install nginx -y
 ```
 
-##### Configure Nginx
-Edit the Nginx configuration file (`/etc/nginx/nginx.conf` or `/etc/nginx/conf.d/flask-app.conf`):
-
+#### Configure Nginx (`/etc/nginx/conf.d/flask-app.conf`)
 ```nginx
 server {
     listen 80;
@@ -198,23 +176,18 @@ server {
 }
 ```
 
-##### Start and Enable Nginx
+#### Start and Enable Nginx
 ```bash
 sudo systemctl start nginx
 sudo systemctl enable nginx
 ```
 
-#### 3. Set Up Gunicorn
-**Gunicorn** is used to serve the Flask application.
-
-##### Install Gunicorn
+#### Install Gunicorn
 ```bash
 pip install gunicorn
 ```
 
-##### Create a Gunicorn Systemd Service
-Create a systemd service file (`/etc/systemd/system/gunicorn.service`):
-
+#### Configure Gunicorn (`/etc/systemd/system/gunicorn.service`)
 ```ini
 [Unit]
 Description=Gunicorn instance to serve Flask app
@@ -231,74 +204,29 @@ Restart=always
 WantedBy=multi-user.target
 ```
 
-##### Start and Enable Gunicorn
+#### Start and Enable Gunicorn
 ```bash
 sudo systemctl start gunicorn
 sudo systemctl enable gunicorn
 ```
-
-#### 4. Run Deployment Script
-The `deployment/deployment.sh` script automates the setup:
-
-```bash
-#!/bin/bash
-
-# Update system packages
-sudo yum update -y
-
-# Install Python and pip
-sudo yum install python3 -y
-sudo python3 -m ensurepip
-sudo pip3 install --upgrade pip
-
-# Install dependencies
-pip3 install -r /home/ec2-user/flask-ci-cd-demo/requirements.txt
-
-# Set up Nginx
-sudo yum install nginx -y
-sudo cp /home/ec2-user/flask-ci-cd-demo/deployment/nginx.conf /etc/nginx/conf.d/flask-app.conf
-sudo systemctl restart nginx
-
-# Set up Gunicorn
-sudo cp /home/ec2-user/flask-ci-cd-demo/deployment/gunicorn.service /etc/systemd/system/gunicorn.service
-sudo systemctl daemon-reload
-sudo systemctl start gunicorn
-sudo systemctl enable gunicorn
-```
-
-##### Run the Deployment Script
-```bash
-chmod +x deployment/deployment.sh
-./deployment/deployment.sh
-```
-
-#### 5. Access Deployed Application
-Visit: `http://your-ec2-public-ip`
-
-You should see the message: **"Hello, World!"** 🎉
 
 ---
 
-## 📌 Useful Commands
+### 📌 Useful Commands
 
-### Restart Services
+#### Restart Services
 ```bash
 sudo systemctl restart nginx
-sudo systemctl restart gunicorn
+tsudo systemctl restart gunicorn
 ```
 
-### Check Logs
+#### Check Logs
 ```bash
 sudo journalctl -u gunicorn --no-pager --lines=50
 sudo journalctl -u nginx --no-pager --lines=50
 ```
 
-### Check Application Status
-```bash
-curl http://localhost:8000
-```
-
-### Reload Nginx Configuration
+#### Reload Nginx Configuration
 ```bash
 sudo nginx -t  # Test configuration
 sudo systemctl reload nginx
@@ -306,12 +234,26 @@ sudo systemctl reload nginx
 
 ---
 
-## 📝 Authors
-- **Vidyashree K J** - *Developer & Maintainer*  
-  🔗 GitHub: [vidya1002](https://github.com/vidya1002)
+## ✅ Expected Output
+
+After successful deployment, visit `http://your-ec2-public-ip` and you should see:
+
+```
+Hello, World!
+```
+
+Sample Response:
+```json
+{
+  "message": "Hello, World!"
+}
+```
 
 ---
+
+## 📝 Author
+- **Vidyashree K J** - *Developer & Maintainer*
+  - 🔗 GitHub: [vidya1002](https://github.com/vidya1002)
 
 🚀 **Happy Coding & Deployment!** 🔥
 
----
