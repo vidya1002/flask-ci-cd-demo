@@ -88,8 +88,7 @@ git push -u origin main
 
 ### 4️⃣ Set Up GitHub Actions CI/CD Workflow
 Create a `.github/workflows/ci-cd.yml` file to automate testing and deployment:
-
-```yaml
+```
 name: Flask CI/CD Pipeline
 
 on:
@@ -129,8 +128,8 @@ jobs:
       - name: Deploy to AWS EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_KEY }} ec2-user@${{ secrets.EC2_IP }} 'bash -s' < deployment/deployment.sh
-```
 
+```
 ---
 
 ### 5️⃣ Add Unit Tests (`test_app.py`) and Update `requirements.txt` (pytest)
