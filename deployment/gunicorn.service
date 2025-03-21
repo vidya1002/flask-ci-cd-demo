@@ -1,0 +1,13 @@
+[Unit]
+Description=Gunicorn instance to serve Flask app
+After=network.target
+
+[Service]
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/home/ec2-user/flask-ci-cd-demo
+ExecStart=/home/ec2-user/flask-ci-cd-demo/venv/bin/gunicorn -w 3 app:app --bind 127.0.0.1:8000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
